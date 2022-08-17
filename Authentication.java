@@ -111,10 +111,11 @@ public class Authentication {
 		int regcode = -1; //-1: error, 0: email exists, 1: successful
 		// create database and tables
 		Connection database = InitDB();
-		try {
+		try {	
             Class.forName("com.mysql.cj.jdbc.Driver");
             database = DriverManager.getConnection(Configuration.dbConnectionURL);
-			PreparedStatement selectingEmail = database.prepareStatement("SELECT * FROM login WHERE email = " + email ); 
+			PreparedStatement selectingEmail = database.prepareStatement("SELECT * FROM login WHERE email = ? "); 
+			selectingEmail.setString(1, email);
 			ResultSet rs = selectingEmail.executeQuery();
 			if (rs.next()) {
 					regcode = 0;
@@ -122,9 +123,14 @@ public class Authentication {
 				else {
 					regcode = 1;
 					String hashedpw = BCrypt.hashpw(password, BCrypt.gensalt(12));
-					PreparedStatement insertingInformation = database.prepareStatement("INSERT INTO login(firstname, lastname, password, email) VALUES (" + firstname + ", " + 
-					lastname + "," + hashedpw + ", " + email + ")");
-					ResultSet insertedInformation = insertingInformation.executeQuery();
+					PreparedStatement insertingInformation = database.prepareStatement("INSERT INTO `proadb`.`login` (`firstname`, `lastname`, `discipline`, `email`, `password`, `roles`) VALUES (?, ?,?,?,?,?);");
+					insertingInformation.setString(1, firstname);
+					insertingInformation.setString(2, lastname);
+					insertingInformation.setString(3, discipline);
+					insertingInformation.setString(4, email);
+					insertingInformation.setString(5, hashedpw);
+					insertingInformation.setString(6, roles);
+					insertingInformation.execute();
 				}
 			rs.close();
 			selectingEmail.close();				
@@ -156,10 +162,10 @@ public class Authentication {
 			ps.execute();
 			
 			String createtable = "CREATE TABLE IF NOT EXISTS proadb.login ("
-					+ "firstname varchar(10) NOT NULL,"
-					+ "lastname varchar(12) NOT NULL,"
-					+ "discipline varchar(4) NOT NULL, "
-					+ "email varchar(40) NOT NULL,"
+					+ "firstname varchar(300) NOT NULL,"
+					+ "lastname varchar(300) NOT NULL,"
+					+ "discipline varchar(400) NOT NULL, "
+					+ "email varchar(100) NOT NULL,"
 					+ "password varchar(200) NOT NULL, "
 					+ "roles varchar(45) NOT NULL, "
 					+ "activated INT NULL, "
@@ -257,12 +263,12 @@ public class Authentication {
 			// establish a connection to the database
 			Connection conn = DriverManager.getConnection(Configuration.dbConnectionURL);
 			//creating query to update acticode
-			String query = "UPDATE login SET acticode=? WHERE email = ?";
-			PreparedStatement ps = conn.prepareStatement(query);
+			String updateActicode = "UPDATE login SET acticode = ? WHERE email = ?";
+			PreparedStatement ps = conn.prepareStatement(updateActicode);
 			
 			//creating query to update activated 
-			String query2= "UPDATE login SET activated = 1 WHERE email = ?";
-			PreparedStatement ps1= conn.prepareStatement(query2);
+			String updateActivated = "UPDATE login SET activated = 1 WHERE email = ?";
+			PreparedStatement ps1 = conn.prepareStatement(updateActivated);
 			
 			if (acticode == null) {				
 				//generate 10-digit activation code
@@ -272,7 +278,7 @@ public class Authentication {
 				ps.execute();
 				
 				
-			}else if (acticode !=null){
+			}else if (acticode != null){
 				ps1.setString(1, email);
 				ps1.execute();
 			}
