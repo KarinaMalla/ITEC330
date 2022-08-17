@@ -258,6 +258,42 @@ public class Authentication {
 	public String updateLogin(String acticode, String email) {
 		return acticode;
 	}
+	public String updateLogin(String acticode, String email) {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			// establish a connection to the database
+			Connection conn = DriverManager.getConnection(Configuration.dbConnectionURL);
+			//creating query to update acticode
+			String query = "UPDATE login SET acticode=? WHERE email = ?";
+			PreparedStatement ps = conn.prepareStatement(query);
+			
+			//creating query to update activated 
+			String query2= "UPDATE login SET activated = 1 WHERE email = ?";
+			PreparedStatement ps1= conn.prepareStatement(query2);
+			
+			if (acticode == null) {				
+				//generate 10-digit activation code
+				acticode= RandomStringUtils.randomAlphanumeric(10);
+				ps.setString(1, acticode);
+				ps.setString(2, email);
+				ps.execute();
+				
+				
+			}else if (acticode !=null){
+				ps1.setString(1, email);
+				ps1.execute();
+			}
+			ps.close();
+			ps1.close();
+			conn.close();
+			
+		} catch(Exception e) {
+			//Handle errors for Class.forName
+			e.printStackTrace();
+		}
+		return acticode;
+	}
+			
 	
 	// change the current user's password
 	public int changePassword() {
