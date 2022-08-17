@@ -117,23 +117,19 @@ public class Authentication {
 			PreparedStatement selectingEmail = database.prepareStatement("SELECT * FROM login WHERE email = " + email ); 
 			ResultSet rs = selectingEmail.executeQuery();
 			if (rs.next()) {
-				String emailsList = rs.getString(1);
-				if (emailsList != null) {
 					regcode = 0;
 				}
 				else {
 					regcode = 1;
 					String hashedpw = BCrypt.hashpw(password, BCrypt.gensalt(12));
-					PreparedStatement insertingInformation = database.prepareStatement("INSERT INTO login(firstname) VALUES (" + firstname + ") "
-							+ "INSERT INTO login(lastname) VALUES (" + lastname + ")" 
-							+ "INSERT INTO login(password) VALUES (" + hashedpw + ")" 
-							+ "INSERT INTO login(email) VALUES (" + email + ")");
+					PreparedStatement insertingInformation = database.prepareStatement("INSERT INTO login(firstname, lastname, password, email) VALUES (" + firstname + ", " + 
+					lastname + "," + hashedpw + ", " + email + ")");
 					ResultSet insertedInformation = insertingInformation.executeQuery();
 				}
 			rs.close();
 			selectingEmail.close();				
 			database.close();
-			}
+			
 
 		} catch(Exception e) {
 	         //Handle errors for Class.forName
