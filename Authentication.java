@@ -162,9 +162,9 @@ public class Authentication {
 			ps.execute();
 			
 			String createtable = "CREATE TABLE IF NOT EXISTS proadb.login ("
-					+ "firstname varchar(300) NOT NULL,"
-					+ "lastname varchar(300) NOT NULL,"
-					+ "discipline varchar(400) NOT NULL, "
+					+ "firstname varchar(100) NOT NULL,"
+					+ "lastname varchar(100) NOT NULL,"
+					+ "discipline varchar(4) NOT NULL, "
 					+ "email varchar(100) NOT NULL,"
 					+ "password varchar(200) NOT NULL, "
 					+ "roles varchar(45) NOT NULL, "
