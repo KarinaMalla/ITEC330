@@ -73,11 +73,12 @@ public class Workflow {
 			int i = 0;
 			int j = 0;
 				while (rs.next()){
-							for (int row = 0; row <= size; row++) {
+							for (int row = 1; row <= size; row++) {
 									if (String.valueOf(row).equals(offered[i])) {
 											if (String.valueOf(row).equals(reviewed[j])) {
-												PreparedStatement updateRow = conn.prepareStatement("UPDATE `proadb`.`units` SET `2boffered` = '1', `2breviewed` = '1'");
-												updateRow.execute();
+												rs.updateInt("2boffered",1);
+												rs.updateInt("2breviewed",1);
+												rs.updateRow();
 												PreparedStatement getDisciplineName = conn.prepareStatement("SELECT DISTINCT discipline FROM proadb.units WHERE 2boffered = 1 AND 2breviewed = 1;");
 												getDisciplineName.execute();
 												ResultSet disciplineList = getDisciplineName.executeQuery();
@@ -106,16 +107,6 @@ public class Workflow {
 								}	
 				
 							}
-	
-		
-		  catch(Exception e) {
-		         //Handle errors for Class.forName
-		         e.printStackTrace();
-		  }
-		String[] simpleArray = new String[dhs.size()];
-		dhs.toArray(simpleArray);
-		return simpleArray;
-	}
 	
 	
 	// Store NLiC and reviewer for each unit to be reviewed 
