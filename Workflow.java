@@ -48,16 +48,75 @@ public class Workflow {
 	 * 
 	 */
 	public String[] setReviewedUnits(String[] offered, String[] reviewed) {
+		Set<String> dhs = new HashSet<String>(); 
 		// using HashSet to store unique discipline head email 
 		// addresses (potentially more than one person)
-		Set<String> dhs = new HashSet<String>(); 
-		
 		// convert HashSet to an array
+		
+		try {
+			// load and register JDBC driver for MySQL
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			// establish a connection to the database
+			Connection conn = DriverManager.getConnection(Configuration.dbConnectionURL);
+			// prepare a SQl statement
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM units ORDER BY discipline ASC, code ASC;", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE); 
+			ps.execute();
+			// execute sql query
+			ResultSet rs = ps.executeQuery();
+			
+			int size = 0;
+			
+			if (rs != null) {
+			  rs.last();    // moves cursor to the last row
+			  size = rs.getRow(); // get row id 
+			}
+				while (rs.next()){
+					for (int row = 0; row <= size; row++) {
+						for (int i = 0; i < offered.length; i++) {
+							if (String.valueOf(row).equals(offered[i])) {
+							for (int j = 0; j < reviewed.length; j++) {
+								if (String.valueOf(row).equals(reviewed[j])) {
+									PreparedStatement updateRow = conn.prepareStatement("UPDATE `proadb`.`units` SET `2boffered` = '1', `2breviewed` = '1';");
+									updateRow.execute();
+									PreparedStatement getDisciplineName = conn.prepareStatement("SELECT DISTINCT discipline FROM proadb.units WHERE 2boffered = 1 AND 2breviewed = 1;");
+									getDisciplineName.execute();
+									ResultSet disciplineList = getDisciplineName.executeQuery();
+									int sizeDisciplineList = 0;
+									if (disciplineList != null) {
+										disciplineList.last();    // moves cursor to the last row
+										sizeDisciplineList = disciplineList.getRow(); // get row id 
+									}
+									ArrayList <String> disciplineListArray =  new ArrayList<String>(); 
+									for (int index = 0; index <= sizeDisciplineList; index++) {
+										disciplineListArray.add(disciplineList.getString(index));
+									}
+									for (int k = 0; k <= disciplineListArray.size(); k++) {
+										 String sqlquery = "SELECT email FROM proadb.login WHERE discipline = ' " + disciplineListArray.get(k) + " ';";
+										 String [] emails = getEmailAddresses(sqlquery, "%dh%");
+										 for (String email:emails) {
+											 dhs.add(email);
+										 }
+									}
+									 
+								}
+							}
+							
+						}
+					}	
+				}
+			}
+		rs.close();
+		conn.close();
+		}
+		
+		
+		  catch(Exception e) {
+		         //Handle errors for Class.forName
+		         e.printStackTrace();
+		  }
 		String[] simpleArray = new String[dhs.size()];
 		dhs.toArray(simpleArray);
-		
 		return simpleArray;
-		
 	}
 	
 	// Store NLiC and reviewer for each unit to be reviewed 
